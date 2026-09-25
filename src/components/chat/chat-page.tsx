@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import SearchAria from "./search-aria";
 import MarkdownRenderer from "./chat-plate-style";
-import ChatLoading from "./ui/chat-loading";
+import ChatLoading from "./chat-loading";
 
 type Message = {
   role: "user" | "assistant";

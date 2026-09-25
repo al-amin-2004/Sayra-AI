@@ -1,5 +1,5 @@
-import ChatPage from "@/components/chat-page";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <ChatPage />;
+export default function HomePage() {
+  redirect("/chat");
 }

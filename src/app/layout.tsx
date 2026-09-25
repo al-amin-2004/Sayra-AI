@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
-import style from "@/styles/shadow.module.css";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/shared/app-sidebar/page";
-import AppHeader from "@/components/shared/app-header/page";
 import { Toaster } from "sonner";
 import { UserProvider } from "@/providers/UserContext";
-import { ChatProvider } from "@/providers/ChatContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,25 +28,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} dark`}
     >
       <UserProvider>
-        <ChatProvider>
-          <body>
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="h-screen w-full overflow-hidden">
-                {/* ========== Background Styles Start ========== */}
-                <div className={style.top_right}></div>
-                <div className={style.bottom_left}></div>
-                <div className={style.bg_dots}></div>
-                {/* ========== Background Styles Start ========== */}
-
-                <AppHeader />
-
-                <section className="h-full">{children}</section>
-              </main>
-            </SidebarProvider>
-            <Toaster position="top-center" richColors />
-          </body>
-        </ChatProvider>
+        <body>
+          <main>
+            <section>{children}</section>
+          </main>
+          <Toaster position="top-center" richColors />
+        </body>
       </UserProvider>
     </html>
   );
