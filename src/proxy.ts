@@ -1,23 +1,67 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export function proxy(request: NextRequest) {
-  const token = request.cookies.get("auth_token")?.value;
   const { pathname } = request.nextUrl;
 
-  if (!token && pathname.startsWith("/profile")) {
-    return NextResponse.redirect(new URL("/signin", request.url));
+  // Public routes
+  const publicRoutes = [
+    "/signin",
+    "/signup",
+    "/verification",
+    "/privacy-policy",
+    "/terms-service",
+  ];
+
+  const isPublicRoute = publicRoutes.some(
+    (route) =>
+      pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  // Allow public routes
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
-  const authRoute = ["/signin", "/signup", "/verification"];
+  const token = request.cookies.get("auth_token")?.value;
 
-  if (token && authRoute.includes(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Not logged in → redirect to signin
+  if (!token) {
+    const signinUrl = new URL("/signin", request.url);
+
+    // Optional: remember where the user wanted to go
+    signinUrl.searchParams.set("callbackUrl", pathname);
+
+    return NextResponse.redirect(signinUrl);
   }
 
-  return NextResponse.next();
+  try {
+    jwt.verify(token, JWT_SECRET);
+
+    return NextResponse.next();
+  } catch {
+    // Invalid / expired token
+    const signinUrl = new URL("/signin", request.url);
+
+    signinUrl.searchParams.set("callbackUrl", pathname);
+
+    const response = NextResponse.redirect(signinUrl);
+
+    // Remove invalid token
+    response.cookies.delete("auth_token");
+
+    return response;
+  }
 }
 
 export const config = {
-  matcher: ["/profile/:path*", "/login", "/signup", "/verification"],
+  matcher: [
+    /*
+     * Protect application routes.
+     * Exclude Next.js internals and static files.
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
